@@ -1,7 +1,17 @@
 
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { safeFetch } from "../utils/api";
+
+const API_BASE = import.meta.env.VITE_BACKEND_URL || "";
+
+const safeParse = async (res) => {
+  const text = await res.text();
+  try {
+    return text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(`Server returned status ${res.status}`);
+  }
+};
 
 export const useBrokers = () => {
   const [loading, setLoading] = useState(false);
@@ -9,10 +19,18 @@ export const useBrokers = () => {
   const [loadingDel, setLoadingDel] = useState(false);
   const [brokers, setBrokers] = useState([]);
 
+  // GET ALL BROKERS
   const getBrokers = async () => {
     setLoading(true);
     try {
-      const data = await safeFetch("/api/brokers", { method: "GET" });
+      const res = await fetch(`${API_BASE}/api/brokers`, {
+        method: "GET",
+        credentials: "include",
+      });
+      const data = await safeParse(res);
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Failed to load brokers");
+      }
       setBrokers(Array.isArray(data) ? data : []);
       return data;
     } catch (error) {
@@ -23,13 +41,20 @@ export const useBrokers = () => {
     }
   };
 
+  // ADD BROKER
   const addBroker = async (brokerData) => {
     setLoadingUp(true);
     try {
-      const data = await safeFetch("/api/brokers", {
+      const res = await fetch(`${API_BASE}/api/brokers`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(brokerData),
+        credentials: "include",
       });
+      const data = await safeParse(res);
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Failed to add broker");
+      }
       toast.success("Broker added successfully!");
       setBrokers((prev) => [data, ...prev]);
       return data;
@@ -41,13 +66,20 @@ export const useBrokers = () => {
     }
   };
 
+  // UPDATE BROKER
   const updateBroker = async (brokerId, updateData) => {
     setLoadingUp(true);
     try {
-      const data = await safeFetch(`/api/brokers/${brokerId}`, {
+      const res = await fetch(`${API_BASE}/api/brokers/${brokerId}`, {
         method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updateData),
+        credentials: "include",
       });
+      const data = await safeParse(res);
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Failed to update broker");
+      }
       toast.success("Broker updated successfully!");
       setBrokers((prev) => prev.map((b) => (b.id === brokerId ? data : b)));
       return true;
@@ -59,10 +91,18 @@ export const useBrokers = () => {
     }
   };
 
+  // DELETE BROKER
   const deleteBroker = async (brokerId) => {
     setLoadingDel(true);
     try {
-      await safeFetch(`/api/brokers/${brokerId}`, { method: "DELETE" });
+      const res = await fetch(`${API_BASE}/api/brokers/${brokerId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await safeParse(res);
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Failed to delete broker");
+      }
       toast.success("Broker removed successfully!");
       setBrokers((prev) => prev.filter((b) => b.id !== brokerId));
       return true;
