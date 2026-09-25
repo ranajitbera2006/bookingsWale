@@ -1,57 +1,36 @@
 
-const API_BASE = import.meta.env.VITE_BACKEND_URL || "";
+export const API_BASE = import.meta.env.VITE_BACKEND_URL || "";
 
-const handleResponse = async (res) => {
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message || "An error occurred");
+export const safeFetch = async (endpoint, options = {}) => {
+  const url = `${API_BASE}${endpoint}`;
+
+  const defaultHeaders = {
+    "Content-Type": "application/json",
+    ...options.headers,
+  };
+
+  const response = await fetch(url, {
+    ...options,
+    headers: defaultHeaders,
+    credentials: "include",
+  });
+
+  const text = await response.text();
+  let data = {};
+
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(
+      `Server returned an invalid response (${response.status}). If using Render free tier, the backend may be waking up.`,
+    );
   }
+
+  if (!response.ok || data.error) {
+    throw new Error(
+      data.error || data.message || `Request failed (${response.status})`,
+    );
+  }
+
   return data;
-};
-
-export const api = {
-  // Brokers
-  getBrokers: () => fetch(`${API_BASE}/brokers`).then(handleResponse),
-  createBroker: (broker) =>
-    fetch(`${API_BASE}/brokers`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(broker),
-    }).then(handleResponse),
-  updateBroker: (id, broker) =>
-    fetch(`${API_BASE}/brokers/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(broker),
-    }).then(handleResponse),
-  deleteBroker: (id) =>
-    fetch(`${API_BASE}/brokers/${id}`, { method: "DELETE" }).then(
-      handleResponse,
-    ),
-
-  // Homes
-  getHomes: () => fetch(`${API_BASE}/homes`).then(handleResponse),
-  createHome: (home) =>
-    fetch(`${API_BASE}/homes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(home),
-    }).then(handleResponse),
-  updateHome: (id, home) =>
-    fetch(`${API_BASE}/homes/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(home),
-    }).then(handleResponse),
-  deleteHome: (id) =>
-    fetch(`${API_BASE}/homes/${id}`, { method: "DELETE" }).then(handleResponse),
-
-  // Profile
-  getProfile: () => fetch(`${API_BASE}/profile`).then(handleResponse),
-  updateProfile: (profile) =>
-    fetch(`${API_BASE}/profile`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(profile),
-    }).then(handleResponse),
 };

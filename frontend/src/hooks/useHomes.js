@@ -1,5 +1,7 @@
+
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { safeFetch } from "../utils/api";
 
 export const useHomes = () => {
   const [loading, setLoading] = useState(false);
@@ -7,19 +9,11 @@ export const useHomes = () => {
   const [loadingDel, setLoadingDel] = useState(false);
   const [homes, setHomes] = useState([]);
 
-  // GET ALL HOMES
   const getHomes = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/homes", {
-        method: "GET",
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        throw new Error(data.error || "Failed to load properties");
-      }
-      setHomes(data);
+      const data = await safeFetch("/api/homes", { method: "GET" });
+      setHomes(Array.isArray(data) ? data : []);
       return data;
     } catch (error) {
       toast.error(error.message);
@@ -29,20 +23,13 @@ export const useHomes = () => {
     }
   };
 
-  // ADD HOME
   const addHome = async (homeData) => {
     setLoadingUp(true);
     try {
-      const res = await fetch("/api/homes", {
+      const data = await safeFetch("/api/homes", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(homeData),
-        credentials: "include",
       });
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        throw new Error(data.error || "Failed to add property");
-      }
       toast.success("Property added successfully!");
       setHomes((prev) => [data, ...prev]);
       return true;
@@ -54,20 +41,13 @@ export const useHomes = () => {
     }
   };
 
-  // UPDATE HOME
   const updateHome = async (homeId, homeData) => {
     setLoadingUp(true);
     try {
-      const res = await fetch(`/api/homes/${homeId}`, {
+      const data = await safeFetch(`/api/homes/${homeId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(homeData),
-        credentials: "include",
       });
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        throw new Error(data.error || "Failed to update property");
-      }
       toast.success("Property updated successfully!");
       setHomes((prev) => prev.map((h) => (h.id === homeId ? data : h)));
       return true;
@@ -79,18 +59,10 @@ export const useHomes = () => {
     }
   };
 
-  // DELETE HOME
   const deleteHome = async (homeId) => {
     setLoadingDel(true);
     try {
-      const res = await fetch(`/api/homes/${homeId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        throw new Error(data.error || "Failed to delete property");
-      }
+      await safeFetch(`/api/homes/${homeId}`, { method: "DELETE" });
       toast.success("Property removed successfully!");
       setHomes((prev) => prev.filter((h) => h.id !== homeId));
       return true;
