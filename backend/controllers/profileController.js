@@ -1,8 +1,6 @@
-// controllers/profileController.js
+
 import AdminProfile from "../models/AdminProfile.js";
 
-// @desc    Get the current admin profile
-// @route   GET /api/profile
 export const getProfile = async (req, res, next) => {
   try {
     let profile = await AdminProfile.findOne();

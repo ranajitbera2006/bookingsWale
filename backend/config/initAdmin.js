@@ -1,4 +1,4 @@
-// server/config/initAdmin.js
+
 import User from "../models/User.js";
 
 export const ensureAdminExists = async () => {
@@ -10,18 +10,16 @@ export const ensureAdminExists = async () => {
     let admin = await User.findOne({ email: adminEmail });
 
     if (!admin) {
-      // 1. Create admin if it doesn't exist
       await User.create({
         name: adminName,
         email: adminEmail,
-        password: adminPassword, // User model pre-save hook will hash this
+        password: adminPassword, 
         role: "admin",
       });
       console.log(`[AUTH] Default Admin created from .env (${adminEmail})`);
     } else {
-      // 2. Sync password with .env if you changed it
       admin.name = adminName;
-      admin.password = adminPassword; // Will be re-hashed by pre-save
+      admin.password = adminPassword; 
       await admin.save();
       console.log(
         `[AUTH] Admin credentials verified & synced from .env (${adminEmail})`,

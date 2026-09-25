@@ -1,45 +1,36 @@
-// server/server.js
+
+import dotenv from "dotenv";
+dotenv.config();
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
-import mongoose from "mongoose";
 
 import authRoutes from "./routes/authRoutes.js";
 import brokerRoutes from "./routes/brokerRoutes.js";
 import homeRoutes from "./routes/homeRoutes.js";
 import { ensureAdminExists } from "./config/initAdmin.js";
+import { connectDB } from "./config/db.js";
 
-dotenv.config();
 
 const app = express();
 
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:5173",
+      process.env.FRONTEND_URL,
+    ].filter(Boolean),
     credentials: true,
   }),
 );
 
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/brokers", brokerRoutes);
 app.use("/api/homes", homeRoutes);
 
-// Database Connection & Admin Auto-Sync
-const MONGO_URI =
-  process.env.MONGO_URI || "mongodb://127.0.0.1:27017/bookingswale";
-
-mongoose
-  .connect(MONGO_URI)
-  .then(async () => {
-    console.log("MongoDB Connected");
-    // Automatically verify & set admin from .env
-    await ensureAdminExists();
-  })
-  .catch((err) => console.error("Database connection error:", err));
-
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(PORT,async () => {
+  await connectDB()
+  console.log(`Server running on http://localhost:${PORT}`);
 });

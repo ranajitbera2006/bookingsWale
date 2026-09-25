@@ -1,4 +1,4 @@
-// models/AdminProfile.js
+
 import mongoose from "mongoose";
 
 const adminProfileSchema = new mongoose.Schema(
