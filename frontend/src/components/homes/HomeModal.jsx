@@ -1,4 +1,4 @@
-// src/components/homes/HomeModal.jsx
+
 import React, { useState, useEffect } from "react";
 import { X, Home, Save, Plus } from "lucide-react";
 import toast from "react-hot-toast";

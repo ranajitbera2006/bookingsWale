@@ -1,4 +1,4 @@
-// src/components/brokers/BrokerTable.jsx
+
 import React, { useState } from "react";
 import BrokerTableRow from "./BrokerTableRow";
 

@@ -1,4 +1,4 @@
-// src/components/layout/Sidebar.jsx
+
 import React from "react";
 import {
   LayoutDashboard,

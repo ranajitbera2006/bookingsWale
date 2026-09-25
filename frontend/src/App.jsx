@@ -1,4 +1,4 @@
-// src/App.jsx
+
 import React, { useState, useEffect, useMemo } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { useAuthContext } from "./context/authContext";
